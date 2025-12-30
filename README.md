@@ -30,8 +30,8 @@ Deploy static websites to Blossom/Nostr in a Github Actions Workflow, powered by
        relays: |
          wss://relay.nsite.lol
        servers: |
-         wss://cdn.hzrd149.com
-         wss://cdn.sovbit.host
+         https://cdn.hzrd149.com
+         https://cdn.sovbit.host
    ```
 
 ## Inputs
