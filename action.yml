@@ -11,32 +11,32 @@ inputs:
     description: 'The nbunksec string for authentication via NIP-46 bunker. Store this as a GitHub Secret.'
     required: true
   directory:
-    description: 'The directory containing the static files to upload.'
+    description: 'The directory containing the static files to deploy.'
     required: true
   relays:
     description: 'YAML array of Nostr relay WebSocket URIs to publish the site event to. Example: ["wss://relay1.example.com", "wss://relay2.example.com"]'
     required: true
   servers:
-    description: 'YAML array of Blossom server WebSocket URIs to upload files to. Example: ["wss://server1.example.com", "wss://server2.example.com"]'
+    description: 'YAML array of Blossom server WebSocket URIs to deploy files to. Example: ["wss://server1.example.com", "wss://server2.example.com"]'
     required: true
   force:
-    description: 'Corresponds to the --force flag in nsyte upload. Re-upload all files.'
+    description: 'Corresponds to the --force flag in nsyte deploy. Re-deploy all files.'
     required: false
     default: 'false'
   purge:
-    description: 'Corresponds to the --purge flag in nsyte upload. Delete remote files not present locally.'
+    description: 'Corresponds to the --purge flag in nsyte deploy. Delete remote files not present locally.'
     required: false
     default: 'false'
   verbose:
-    description: 'Corresponds to the --verbose flag in nsyte upload. Show detailed output.'
+    description: 'Corresponds to the --verbose flag in nsyte deploy. Show detailed output.'
     required: false
     default: 'false'
   concurrency:
-    description: 'Corresponds to the --concurrency flag in nsyte upload. Number of parallel uploads.'
+    description: 'Corresponds to the --concurrency flag in nsyte deploy. Number of parallel deploys.'
     required: false
     default: '4'
   fallback:
-    description: 'Corresponds to the --fallback flag in nsyte upload. Path to the fallback HTML file (e.g., /index.html for SPAs).'
+    description: 'Corresponds to the --fallback flag in nsyte deploy. Path to the fallback HTML file (e.g., /index.html for SPAs).'
     required: false
     default: ''
   publish_server_list: 
@@ -54,7 +54,7 @@ inputs:
 
 outputs:
   status:
-    description: 'Status of the upload operation (e.g., "success").'
+    description: 'Status of the deploy operation (e.g., "success").'
   nsyte_version_used:
     description: 'The actual version of nsyte that was downloaded and used.'
 
@@ -185,7 +185,7 @@ runs:
       shell: bash
       run: |
         # The -i flag is critical for non-interactive CI environments
-        CMD="\"${{ steps.download_nsyte.outputs.nsyte_path }}\" upload \"${{ inputs.directory }}\" -i --nbunksec \"${{ inputs.nbunksec }}\""
+        CMD="\"${{ steps.download_nsyte.outputs.nsyte_path }}\" deploy \"${{ inputs.directory }}\" -i --nbunksec \"${{ inputs.nbunksec }}\""
         
         # Handle relays as newline-separated list
         if [[ -n "${{ inputs.relays }}" ]]; then
@@ -214,7 +214,7 @@ runs:
         # Using ::set-output for command
         echo "::set-output name=command::${CMD}"
 
-    - name: Run nsyte upload
+    - name: Run nsyte deploy
       id: nsyte_run
       shell: bash
       run: |
@@ -235,10 +235,10 @@ runs:
         COMMAND_EXIT_CODE=$? # Capture the exit code of the nsyte command
 
         if [[ $COMMAND_EXIT_CODE -eq 0 ]]; then
-           echo "nsyte upload completed successfully."
+           echo "nsyte deploy completed successfully."
            echo "::set-output name=status::success"
         else
-           echo "::error::nsyte upload command failed with exit code $COMMAND_EXIT_CODE." # Log the error
+           echo "::error::nsyte deploy command failed with exit code $COMMAND_EXIT_CODE." # Log the error
            echo "::set-output name=status::failure"
            # This script step itself should still exit 0 to ensure outputs are processed.
            # The calling workflow (test.yml) has continue-on-error: true and will check the 'status' output.
