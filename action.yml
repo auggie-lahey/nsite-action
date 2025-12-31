@@ -1,4 +1,4 @@
-name: 'nsite Action'
+name: 'nsyte action'
 description: 'Deploys static website files to Blossom/Nostr using the nsyte CLI.'
 author: 'nsite-action Developers'
 
