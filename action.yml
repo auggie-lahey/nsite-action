@@ -149,8 +149,10 @@ runs:
         if [[ "$NSYT_VERSION_FINAL" =~ ^v(.+)$ ]]; then VERSION_NUMBER="${BASH_REMATCH[1]}"; else VERSION_NUMBER="$NSYT_VERSION_FINAL"; fi
         echo "Using nsyte tag: $NSYT_VERSION_FINAL (version number for asset: $VERSION_NUMBER)"
         # Using ::set-output for version outputs as GITHUB_OUTPUT can be finicky in composite actions
-        echo "::set-output name=version::${NSYT_VERSION_FINAL}"
-        echo "::set-output name=version_number::${VERSION_NUMBER}"
+        #echo "::set-output name=version::${NSYT_VERSION_FINAL}"
+        #echo "::set-output name=version_number::${VERSION_NUMBER}"
+        echo "version=${NSYT_VERSION_FINAL}" >> $GITHUB_OUTPUT
+        echo "version_number=${VERSION_NUMBER}" >> $GITHUB_OUTPUT
 
     - name: Download nsyte
       id: download_nsyte 
@@ -178,7 +180,9 @@ runs:
         fi
         chmod +x "nsyte_bin/$ASSET_FILENAME"
         # Using ::set-output for nsyte_path
-        echo "::set-output name=nsyte_path::$(pwd)/nsyte_bin/$ASSET_FILENAME"
+        #echo "::set-output name=nsyte_path::$(pwd)/nsyte_bin/$ASSET_FILENAME"
+        echo "nsyte_path=$(pwd)/nsyte_bin/$ASSET_FILENAME" >> $GITHUB_OUTPUT
+
 
     - name: Build nsyte command
       id: build_cmd
@@ -212,7 +216,9 @@ runs:
         if [[ "${{ inputs.publish_relay_list }}" == "true" ]]; then CMD+=" --publish-relay-list"; fi
         if [[ "${{ inputs.publish_profile }}" == "true" ]]; then CMD+=" --publish-profile"; fi
         # Using ::set-output for command
-        echo "::set-output name=command::${CMD}"
+        #echo "::set-output name=command::${CMD}"
+        echo "command=${CMD}" >> $GITHUB_OUTPUT
+
 
     - name: Run nsyte deploy
       id: nsyte_run
@@ -222,8 +228,9 @@ runs:
         NSYT_COMMAND="${{ steps.build_cmd.outputs.command }}"
         
         # Set version used output using ::set-output
-        echo "::set-output name=nsyte_version_used::${{ steps.version.outputs.version }}"
-
+        #echo "::set-output name=nsyte_version_used::${{ steps.version.outputs.version }}"
+        echo "nsyte_version_used=${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
+        
         echo "Executing nsyte command (secrets masked):"
         MASKED_COMMAND=$(echo "$NSYT_COMMAND" | \
           sed -e "s/--nbunksec \"[^\"]*\"/--nbunksec \"***MASKED***\"/" \
@@ -236,10 +243,13 @@ runs:
 
         if [[ $COMMAND_EXIT_CODE -eq 0 ]]; then
            echo "nsyte deploy completed successfully."
-           echo "::set-output name=status::success"
+           #echo "::set-output name=status::success"
+           echo "status=success" >> $GITHUB_OUTPUT
+
         else
            echo "::error::nsyte deploy command failed with exit code $COMMAND_EXIT_CODE." # Log the error
-           echo "::set-output name=status::failure"
+           #echo "::set-output name=status::failure"
+           echo "status=failure" >> $GITHUB_OUTPUT
            # This script step itself should still exit 0 to ensure outputs are processed.
            # The calling workflow (test.yml) has continue-on-error: true and will check the 'status' output.
         fi
