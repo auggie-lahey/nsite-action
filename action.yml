@@ -240,6 +240,7 @@ runs:
         
         eval "$NSYT_COMMAND"
         COMMAND_EXIT_CODE=$? # Capture the exit code of the nsyte command
+        echo COMMAND_EXIT_CODE=$?
 
         if [[ $COMMAND_EXIT_CODE -eq 0 ]]; then
            echo "nsyte deploy completed successfully."
